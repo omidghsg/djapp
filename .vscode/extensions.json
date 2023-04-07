@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "ms-python.black-formatter",
+        "mhutchie.git-graph",
+        "donjayamanne.githistory",
+        "eamodio.gitlens",
+        "ms-python.isort",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-vscode-remote.remote-wsl",
+        "ms-vscode-remote.remote-containers"
+    ]
+}
