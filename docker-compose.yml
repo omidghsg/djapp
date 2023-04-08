@@ -6,10 +6,13 @@ services:
             context: .
         ports:
         -   8001:8001
+        -   8002:8002
         volumes:
-        -   .:/src
+        -   src:/src
         command: >
-            sh -c "./wait-for-it.sh db:5432 &&  python manage.py migrate && python manage.py collectstatic --no-input &&  gunicorn -c config/gunicornconfig.py"
+            sh -c "/app/start.sh"
+        env_file:
+        -   .env
         environment:
         -   DB_HOST=${DB_HOST}
         -   DB_NAME=${DB_NAME}
@@ -19,22 +22,29 @@ services:
         depends_on:
         -   db
         -   redis
+        # restart: unless-stopped
 
     db:
         image: postgres:13-alpine
+        env_file:
+        -   .env
         environment:
         -   POSTGRES_DB=${POSTGRES_DB}
         -   POSTGRES_USER=${POSTGRES_USER}
         -   POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
         -   PGDATA=${PGDATA}
+        -   DB_VOLUME=${DB_VOLUME}
         volumes:
-        -   ./dbdata:/dbdata
+        -   db:/dbdata
+        # restart: unless-stopped
 
     pgadmin:
         image: dpage/pgadmin4
-        restart: always
+        # restart: always
         ports:
-        -   "5052:80"
+        -   "5053:80"
+        env_file:
+        -   .env
         environment:
         -   PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
         -   PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
@@ -43,26 +53,29 @@ services:
 
     redis:
         image: "redis:alpine"
+        # restart: unless-stopped
 
     celery:
         build:
             context: .
         command: celery -A config worker -l info
         volumes:
-        -   .:/src
+        -   src:/src
         depends_on:
         -   db
         -   redis
+        # restart: unless-stopped
 
     celery-beat:
         build:
             context: .
         command: celery -A config beat -l info
         volumes:
-        -   .:/src
+        -   src:/src
         depends_on:
         -   db
         -   redis
+        # restart: unless-stopped
 
     celery-flower:
         build:
@@ -71,11 +84,14 @@ services:
         ports:
         -   5555:5555
         volumes:
-        -   .:/src
+        -   src:/src
         depends_on:
         -   celery
+        # restart: unless-stopped
 
 volumes:
     src:
-    dbdata:
     pgadmindata:
+    db:
+        external: false
+        name: ${DB_VOLUME}

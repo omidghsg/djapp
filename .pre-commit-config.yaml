@@ -82,6 +82,7 @@ repos:
     -   id: django-test
         name: Django test
         entry: docker-compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from app
+        # entry: docker-compose --env-file .env.test up --abort-on-container-exit --exit-code-from app
         always_run: true
         pass_filenames: false
         language: system
